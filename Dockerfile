@@ -1,17 +1,52 @@
 # clean base image containing only comfyui, comfy-cli and comfyui-manager
 FROM runpod/worker-comfyui:5.8.4-base
 
-# build-time tokens for gated downloads — never baked into final image.
-# pass via: docker build --build-arg HF_TOKEN=$HF_TOKEN ...
-ARG HF_TOKEN=""
+# If your workflow needs custom nodes, add them here. ResolutionSelector and
+# ComfySwitchNode are NOT core ComfyUI — check ComfyUI Manager locally for the
+# pack names and uncomment. Node 49 (ResolutionSelector) can be deleted instead
+# if you drive width/height from SillyTavern.
+# RUN comfy-node-install <pack-name> <pack-name>
 
-# download models into comfyui
-RUN BACKOFFS="10 20 30 60 90" && for i in 1 2 3 4 5; do HF_TOKEN=$HF_TOKEN comfy model download --url 'https://huggingface.co/Comfy-Org/Krea-2/resolve/main/diffusion_models/krea2_turbo_fp8_scaled.safetensors' --relative-path models/diffusion_models --filename 'krea2_turbo_fp8_scaled.safetensors' && break; if [ $i -eq 5 ]; then echo "model-download failed after 5 attempts" >&2; exit 1; fi; SLEEP=$(echo $BACKOFFS | cut -d ' ' -f $i) && echo "model-download attempt $i failed; retrying in $SLEEP seconds" >&2; sleep $SLEEP; done
-RUN BACKOFFS="10 20 30 60 90" && for i in 1 2 3 4 5; do HF_TOKEN=$HF_TOKEN comfy model download --url 'https://huggingface.co/Comfy-Org/Krea-2/resolve/main/diffusion_models/krea2_turbo_fp8_scaled.safetensors' --relative-path models/diffusion_models --filename 'diffusion_models/krea2_turbo_fp8_scaled.safetensors' && break; if [ $i -eq 5 ]; then echo "model-download failed after 5 attempts" >&2; exit 1; fi; SLEEP=$(echo $BACKOFFS | cut -d ' ' -f $i) && echo "model-download attempt $i failed; retrying in $SLEEP seconds" >&2; sleep $SLEEP; done
-RUN BACKOFFS="10 20 30 60 90" && for i in 1 2 3 4 5; do HF_TOKEN=$HF_TOKEN comfy model download --url 'https://huggingface.co/Comfy-Org/Krea-2/resolve/main/vae/qwen_image_vae.safetensors' --relative-path models/vae --filename 'qwen_image_vae.safetensors' && break; if [ $i -eq 5 ]; then echo "model-download failed after 5 attempts" >&2; exit 1; fi; SLEEP=$(echo $BACKOFFS | cut -d ' ' -f $i) && echo "model-download attempt $i failed; retrying in $SLEEP seconds" >&2; sleep $SLEEP; done
-RUN BACKOFFS="10 20 30 60 90" && for i in 1 2 3 4 5; do HF_TOKEN=$HF_TOKEN comfy model download --url 'https://huggingface.co/QuantStack/Qwen-Image-Edit-GGUF/resolve/5cf642dd2b94af2a558ec06a9dde255c673e1fdf/VAE/Qwen_Image-VAE.safetensors' --relative-path models/vae --filename 'VAE/Qwen_Image-VAE.safetensors' && break; if [ $i -eq 5 ]; then echo "model-download failed after 5 attempts" >&2; exit 1; fi; SLEEP=$(echo $BACKOFFS | cut -d ' ' -f $i) && echo "model-download attempt $i failed; retrying in $SLEEP seconds" >&2; sleep $SLEEP; done
-RUN BACKOFFS="10 20 30 60 90" && for i in 1 2 3 4 5; do HF_TOKEN=$HF_TOKEN comfy model download --url 'https://huggingface.co/Comfy-Org/Krea-2/resolve/main/text_encoders/qwen3vl_4b_fp8_scaled.safetensors' --relative-path models/text_encoders --filename 'qwen3vl_4b_fp8_scaled.safetensors' && break; if [ $i -eq 5 ]; then echo "model-download failed after 5 attempts" >&2; exit 1; fi; SLEEP=$(echo $BACKOFFS | cut -d ' ' -f $i) && echo "model-download attempt $i failed; retrying in $SLEEP seconds" >&2; sleep $SLEEP; done
-RUN BACKOFFS="10 20 30 60 90" && for i in 1 2 3 4 5; do HF_TOKEN=$HF_TOKEN comfy model download --url 'https://huggingface.co/John2386/fullgreed/resolve/515e482855cd0b08eb5a4c5ecb620247ceb21bdd/qwen3vl_4b_bf16.safetensors' --relative-path models/text_encoders --filename 'qwen3vl_4b_bf16.safetensors' && break; if [ $i -eq 5 ]; then echo "model-download failed after 5 attempts" >&2; exit 1; fi; SLEEP=$(echo $BACKOFFS | cut -d ' ' -f $i) && echo "model-download attempt $i failed; retrying in $SLEEP seconds" >&2; sleep $SLEEP; done
-RUN BACKOFFS="10 20 30 60 90" && for i in 1 2 3 4 5; do HF_TOKEN=$HF_TOKEN comfy model download --url 'https://huggingface.co/Comfy-Org/Krea-2/resolve/main/loras/krea2_darkbrush.safetensors' --relative-path models/loras --filename 'krea2_darkbrush.safetensors' && break; if [ $i -eq 5 ]; then echo "model-download failed after 5 attempts" >&2; exit 1; fi; SLEEP=$(echo $BACKOFFS | cut -d ' ' -f $i) && echo "model-download attempt $i failed; retrying in $SLEEP seconds" >&2; sleep $SLEEP; done
-RUN BACKOFFS="10 20 30 60 90" && for i in 1 2 3 4 5; do HF_TOKEN=$HF_TOKEN comfy model download --url 'https://huggingface.co/yufusoft/realism_engine_krea2_v3.1/resolve/main/realism_engine_krea2_v3.1.safetensors' --relative-path models/loras --filename 'realism_engine_krea2_v3.1.safetensors' && break; if [ $i -eq 5 ]; then echo "model-download failed after 5 attempts" >&2; exit 1; fi; SLEEP=$(echo $BACKOFFS | cut -d ' ' -f $i) && echo "model-download attempt $i failed; retrying in $SLEEP seconds" >&2; sleep $SLEEP; done
-RUN BACKOFFS="10 20 30 60 90" && for i in 1 2 3 4 5; do HF_TOKEN=$HF_TOKEN comfy model download --url 'https://huggingface.co/mpasila/Krea-2-LoRAs/resolve/main/Krea2_TextFusion_Refusal_Reduction.safetensors' --relative-path models/loras --filename 'Krea2_TextFusion_Refusal_Reduction.safetensors' && break; if [ $i -eq 5 ]; then echo "model-download failed after 5 attempts" >&2; exit 1; fi; SLEEP=$(echo $BACKOFFS | cut -d ' ' -f $i) && echo "model-download attempt $i failed; retrying in $SLEEP seconds" >&2; sleep $SLEEP; done
+# --- diffusion model (workflow node 56) ---
+RUN for i in 1 2 3 4 5; do \
+      comfy model download \
+        --url 'https://huggingface.co/Comfy-Org/Krea-2/resolve/main/diffusion_models/krea2_turbo_fp8_scaled.safetensors' \
+        --relative-path models/diffusion_models \
+        --filename 'krea2_turbo_fp8_scaled.safetensors' \
+      && break || { [ "$i" = 5 ] && exit 1; sleep $((i * 15)); }; \
+    done
+
+# --- vae (workflow node 57) ---
+RUN for i in 1 2 3 4 5; do \
+      comfy model download \
+        --url 'https://huggingface.co/QuantStack/Qwen-Image-Edit-GGUF/resolve/5cf642dd2b94af2a558ec06a9dde255c673e1fdf/VAE/Qwen_Image-VAE.safetensors' \
+        --relative-path models/vae \
+        --filename 'Qwen_Image-VAE.safetensors' \
+      && break || { [ "$i" = 5 ] && exit 1; sleep $((i * 15)); }; \
+    done
+
+# --- text encoder / clip (workflow node 63) ---
+RUN for i in 1 2 3 4 5; do \
+      comfy model download \
+        --url 'https://huggingface.co/John2386/fullgreed/resolve/515e482855cd0b08eb5a4c5ecb620247ceb21bdd/qwen3vl_4b_bf16.safetensors' \
+        --relative-path models/text_encoders \
+        --filename 'qwen3vl_4b_bf16.safetensors' \
+      && break || { [ "$i" = 5 ] && exit 1; sleep $((i * 15)); }; \
+    done
+
+# --- loras (workflow nodes 64 and 65) ---
+RUN for i in 1 2 3 4 5; do \
+      comfy model download \
+        --url 'https://huggingface.co/yufusoft/realism_engine_krea2_v3.1/resolve/main/realism_engine_krea2_v3.1.safetensors' \
+        --relative-path models/loras \
+        --filename 'realism_engine_krea2_v3.1.safetensors' \
+      && break || { [ "$i" = 5 ] && exit 1; sleep $((i * 15)); }; \
+    done
+
+RUN for i in 1 2 3 4 5; do \
+      comfy model download \
+        --url 'https://huggingface.co/mpasila/Krea-2-LoRAs/resolve/main/Krea2_TextFusion_Refusal_Reduction.safetensors' \
+        --relative-path models/loras \
+        --filename 'Krea2_TextFusion_Refusal_Reduction.safetensors' \
+      && break || { [ "$i" = 5 ] && exit 1; sleep $((i * 15)); }; \
+    done
